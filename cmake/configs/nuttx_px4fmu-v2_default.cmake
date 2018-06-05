@@ -150,6 +150,10 @@ set(config_module_list
 	# Tutorial code from
 	# https://px4.io/dev/px4_simple_app
 	#examples/px4_simple_app
+	examples/burrito
+	#examples/vi
+  drivers/am4096
+  drivers/rmk1b
 
 	# Tutorial code from
 	# https://px4.io/dev/daemon

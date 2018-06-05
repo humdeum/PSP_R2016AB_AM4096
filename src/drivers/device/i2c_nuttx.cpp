@@ -42,6 +42,8 @@
 
 #include "i2c.h"
 
+#define PRDEBUG 1
+
 namespace device
 {
 
@@ -105,10 +107,12 @@ I2C::init()
 	unsigned bus_index;
 
 	// attach to the i2c bus
+  if (PRDEBUG) DEVICE_LOG("_bus: %d", _bus);
 	_dev = up_i2cinitialize(_bus);
 
 	if (_dev == nullptr) {
 		DEVICE_DEBUG("failed to init I2C");
+		if (PRDEBUG) DEVICE_LOG("failed to init I2C");
 		ret = -ENOENT;
 		goto out;
 	}
@@ -123,7 +127,7 @@ I2C::init()
 		(void)up_i2cuninitialize(_dev);
 		_dev = nullptr;
 		DEVICE_LOG("FAIL: too slow for bus #%u: %u KHz, device max: %u KHz)",
-			   _bus, _bus_clocks[bus_index] / 1000, _frequency / 1000);
+	    _bus, _bus_clocks[bus_index] / 1000, _frequency / 1000);
 		ret = -EINVAL;
 		goto out;
 	}
@@ -143,14 +147,17 @@ I2C::init()
 	// This is necessary as automatically lowering the bus speed
 	// for maximum compatibility could induce timing issues on
 	// critical sensors the adopter might be unaware of.
+  if (PRDEBUG) DEVICE_LOG("_dev: %x, _bus_clocks[bus_index]: %d, bus_index: %d", 
+    _dev, _bus_clocks[bus_index], bus_index);
 	I2C_SETFREQUENCY(_dev, _bus_clocks[bus_index]);
 
 	// call the probe function to check whether the device is present
 	ret = probe();
+  if (PRDEBUG) DEVICE_LOG("OK: %d", OK);
 
 	if (ret != OK) {
-		DEVICE_DEBUG("probe failed");
-		goto out;
+    DEVICE_DEBUG("probe failed");
+		//goto out;
 	}
 
 	// do base class init, which will create device node, etc
@@ -158,12 +165,13 @@ I2C::init()
 
 	if (ret != OK) {
 		DEVICE_DEBUG("cdev init failed");
+		if (PRDEBUG) DEVICE_LOG("cdev init failed and returned %d", ret);
 		goto out;
 	}
 
 	// tell the world where we are
 	DEVICE_LOG("on I2C bus %d at 0x%02x (bus: %u KHz, max: %u KHz)",
-		   _bus, _address, _bus_clocks[bus_index] / 1000, _frequency / 1000);
+    _bus, _address, _bus_clocks[bus_index] / 1000, _frequency / 1000);
 
 out:
 
@@ -179,6 +187,7 @@ int
 I2C::probe()
 {
 	// Assume the device is too stupid to be discoverable.
+  if (PRDEBUG) DEVICE_LOG("returns OK");
 	return OK;
 }
 
@@ -191,9 +200,11 @@ I2C::transfer(const uint8_t *send, unsigned send_len, uint8_t *recv, unsigned re
 	unsigned retry_count = 0;
 
 	do {
-		//	DEVICE_DEBUG("transfer out %p/%u  in %p/%u", send, send_len, recv, recv_len);
+			DEVICE_DEBUG("transfer out %p/%u  in %p/%u", send, send_len, recv, recv_len);
 
 		msgs = 0;
+
+    DEVICE_DEBUG("send: %d", const_cast<uint8_t *>(send));
 
 		if (send_len > 0) {
 			msgv[msgs].addr = _address;
@@ -211,6 +222,8 @@ I2C::transfer(const uint8_t *send, unsigned send_len, uint8_t *recv, unsigned re
 			msgs++;
 		}
 
+    DEVICE_DEBUG("msgs: %d", msgs);
+
 		if (msgs == 0) {
 			return -EINVAL;
 		}
@@ -227,6 +240,7 @@ I2C::transfer(const uint8_t *send, unsigned send_len, uint8_t *recv, unsigned re
 			up_i2creset(_dev);
 		}
 
+    DEVICE_DEBUG("retry_count: %d", retry_count);
 	} while (retry_count++ < _retries);
 
 	return ret;

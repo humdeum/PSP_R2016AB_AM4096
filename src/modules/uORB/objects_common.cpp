@@ -57,6 +57,9 @@ ORB_DEFINE(sensor_gyro, struct sensor_gyro_s);
 #include "topics/sensor_baro.h"
 ORB_DEFINE(sensor_baro, struct sensor_baro_s);
 
+#include "topics/sensor_henc.h"
+ORB_DEFINE(sensor_henc, struct sensor_henc_s);
+
 #include "topics/output_pwm.h"
 ORB_DEFINE(output_pwm, struct output_pwm_s);
 

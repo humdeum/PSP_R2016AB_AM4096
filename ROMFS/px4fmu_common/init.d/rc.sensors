@@ -36,14 +36,16 @@ then
 	fi
 
 	# External I2C bus
-	if lis3mdl -X start
-	then
-	fi
+  # disabled: command not found
+	#if lis3mdl -X start
+	#then
+	#fi
 
 	# Internal I2C bus
-	if hmc5883 -C -T -I -R 4 start
-	then
-	fi
+	# disabled: too noisy i2c
+  #if hmc5883 -C -T -I -R 4 start
+	#then
+	#fi
 
 	# external MPU6K is rotated 180 degrees yaw
 	if mpu6000 -X -R 4 start
@@ -53,7 +55,7 @@ then
 		set BOARD_FMUV3 false
 	fi
 
-	if [ $BOARD_FMUV3 == true ]
+	if [ $BOARD_FMUV3 == false ]
 	then
 		# external L3GD20H is rotated 180 degrees yaw
 		if l3gd20 -X -R 4 start
@@ -66,17 +68,19 @@ then
 		fi
 
 		# internal MPU6000 is rotated 180 deg roll, 270 deg yaw
-		if mpu6000 -R 14 start
-		then
-		fi
+    # disabled: no device on this bus
+		#if mpu6000 -R 14 start
+		#then
+		#fi
 
 		if hmc5883 -C -T -S -R 8 start
 		then
 		fi
 
-		if meas_airspeed start -b 2
-		then
-		fi
+    # disabled: too noisy i2c
+		#if meas_airspeed start -b 2
+		#then
+		#fi
 
 	else
 		# FMUv2
@@ -178,21 +182,23 @@ then
 	fi
 fi
 
-if meas_airspeed start
-then
-else
-	if ets_airspeed start
-	then
-	else
-		if ets_airspeed start -b 1
-		then
-		fi
-	fi
-fi
+# disabled: too noisy i2c
+#if meas_airspeed start
+#then
+#else
+#	if ets_airspeed start
+#	then
+#	else
+#		if ets_airspeed start -b 1
+#		then
+#		fi
+#	fi
+#fi
 
-if sf10a start
-then
-fi
+# disabled: command not found
+#if sf10a start
+#then
+#fi
 
 # Wait 20 ms for sensors (because we need to wait for the HRT and work queue callbacks to fire)
 usleep 20000
